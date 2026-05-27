@@ -14,5 +14,5 @@ thiserror = { version = "2.0.18", default-features = false }
 zerocopy = { version = "0.8.48", features = ["zerocopy-derive", "derive"] }
 
 [features]
-default = []
+default = ["alloc"]
 alloc = []
