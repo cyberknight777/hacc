@@ -72,6 +72,10 @@ impl<'a> Preloader<'a> {
         &self.gfh
     }
 
+    pub fn content(&self) -> &'a [u8] {
+        self.gfh.content()
+    }
+
     pub fn emi(&self) -> Option<&'a [u8]> {
         (self.emi_size != 0)
             .then_some(&self.gfh.content()[self.emi_offset..self.emi_offset + self.emi_size])
