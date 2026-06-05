@@ -1,6 +1,7 @@
 use hacc::*;
 
 const LK_IMAGE: &[u8] = include_bytes!("../../tests/files/lk.img");
+const LEGACY_IMAGE: &[u8] = include_bytes!("../../tests/files/legacy_lk.img");
 
 #[test]
 fn image_header_parse() {
@@ -26,6 +27,13 @@ fn image_header_parse() {
     assert_eq!(image.get_part_certs("mock2").count(), 2);
 
     assert!(image.get_partition("non_existent").is_none());
+
+    let legacy_image = Image::new(LEGACY_IMAGE);
+    let legacy_part = legacy_image.get_partition("LK").expect("Failed to parse legacy partition");
+
+    assert!(legacy_part.header.is_valid(), "Legacy image header magic or header size is invalid");
+    assert!(!legacy_part.header.is_extended(), "Legacy image header should not be extended");
+    assert_eq!(legacy_part.header.size(), size_of::<ImageHeader>() as u32);
 }
 
 #[test]
@@ -78,6 +86,18 @@ fn image_add_partition() {
 
     assert!(result.is_err(), "Adding partition with name longer than 32 characters should fail");
     assert!(matches!(result, Err(Error::Image(ImageError::PartitionNameTooLong))));
+
+    let mut legacy = Image::new(LEGACY_IMAGE);
+
+    let result =
+        legacy.add_partition("test_part", b"test_content", ImageKind::Md(ImageMDKind::MdLte));
+
+    assert!(result.is_ok());
+    assert_eq!(
+        legacy.partitions().count(),
+        2,
+        "Image should have 2 partitions after adding to legacy image",
+    );
 }
 
 #[cfg(feature = "alloc")]
